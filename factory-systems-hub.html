@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="ศูนย์ควบคุมระบบโรงงานสำหรับเปิดระบบสำคัญและจัดการลิงก์ระบบได้จากหน้าเดียว">
+<meta name="theme-color" content="#0b0f14">
+<meta name="color-scheme" content="dark">
+<title>ศูนย์ควบคุมระบบโรงงาน | Factory Systems Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0f14;
+  --bg-panel:#12181f;
+  --bg-panel-2:#161e26;
+  --line:#232d38;
+  --line-soft:#1a232c;
+  --amber:#f5a623;
+  --amber-dim:#8a5f18;
+  --cyan:#2dd4e8;
+  --green:#34d399;
+  --red:#ef4444;
+  --text:#e6edf3;
+  --text-dim:#8b98a5;
+  --text-faint:#5a6673;
+  --radius:10px;
+  --shadow: 0 10px 30px rgba(0,0,0,.45);
+}
+body[data-theme="light"]{
+  --bg:#f4f7fb;
+  --bg-panel:#ffffff;
+  --bg-panel-2:#eef4f8;
+  --line:#d5dde5;
+  --line-soft:#e7edf3;
+  --amber:#d28400;
+  --amber-dim:#b76a00;
+  --cyan:#167ba7;
+  --green:#218a4b;
+  --red:#d14343;
+  --text:#17212b;
+  --text-dim:#546372;
+  --text-faint:#73808d;
+  --shadow: 0 10px 25px rgba(15,23,42,.08);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(245,166,35,.06), transparent 60%),
+    radial-gradient(1000px 500px at 100% 0%, rgba(45,212,232,.05), transparent 55%),
+    var(--bg);
+  color:var(--text);
+  font-family:'Sarabun', sans-serif;
+  min-height:100vh;
+  background-attachment:fixed;
+}
+/* subtle diagonal hazard texture in corners */
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  pointer-events:none;
+  background-image:
+    repeating-linear-gradient(135deg, rgba(245,166,35,.035) 0 10px, transparent 10px 20px);
+  -webkit-mask-image: radial-gradient(1200px 500px at 0% 0%, black, transparent 70%);
+          mask-image: radial-gradient(1200px 500px at 0% 0%, black, transparent 70%);
+  z-index:0;
+}
+.wrap{position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:28px 20px 60px;}
+
+/* ===== HEADER ===== */
+header{
+  display:flex; align-items:flex-start; justify-content:space-between;
+  gap:20px; flex-wrap:wrap;
+  padding-bottom:22px; margin-bottom:26px;
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex; align-items:center; gap:14px;}
+.brand-mark{
+  width:46px; height:46px; flex:none;
+  border-radius:8px;
+  background:linear-gradient(155deg, var(--bg-panel-2), var(--bg-panel));
+  border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+}
+.brand-mark::after{
+  content:"";
+  position:absolute; inset:5px;
+  border-radius:5px;
+  border:1px solid var(--amber-dim);
+}
+.brand-mark svg{width:22px;height:22px;}
+.brand h1{
+  font-family:'Rajdhani',sans-serif; font-weight:700;
+  font-size:26px; letter-spacing:.5px; margin:0; line-height:1.1;
+  color:var(--text);
+}
+.brand p{
+  margin:2px 0 0; font-size:13px; color:var(--text-dim);
+  font-family:'Share Tech Mono', monospace; letter-spacing:.5px;
+}
+.hud{
+  display:flex; align-items:center; gap:18px;
+  font-family:'Share Tech Mono', monospace;
+}
+.hud-block{text-align:right;}
+.hud-label{font-size:10px; color:var(--text-faint); letter-spacing:1.5px; text-transform:uppercase;}
+.hud-value{font-size:16px; color:var(--cyan); letter-spacing:1px;}
+.gear-btn{
+  width:42px; height:42px; border-radius:8px;
+  border:1px solid var(--line); background:var(--bg-panel);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; color:var(--text-dim); transition:.2s;
+}
+.gear-btn:hover{ color:var(--amber); border-color:var(--amber-dim); background:var(--bg-panel-2);}
+.gear-btn.active{ color:var(--bg); background:var(--amber); border-color:var(--amber);}
+.gear-btn svg{width:20px;height:20px;}
+
+/* ===== TOOLBAR ===== */
+.toolbar{
+  display:flex; gap:12px; align-items:center; margin-bottom:22px; flex-wrap:wrap;
+}
+.search{
+  flex:1; min-width:220px; position:relative;
+}
+.search input{
+  width:100%; background:var(--bg-panel); border:1px solid var(--line);
+  color:var(--text); padding:10px 14px 10px 38px; border-radius:8px;
+  font-family:'Sarabun',sans-serif; font-size:14px; outline:none;
+}
+.search input:focus{ border-color:var(--cyan); }
+.search svg{position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px;height:16px; color:var(--text-faint);}
+.chip{
+  font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--text-dim);
+  border:1px solid var(--line); padding:8px 12px; border-radius:8px; background:var(--bg-panel);
+  white-space:nowrap;
+}
+.chip b{color:var(--green);} 
+.chip.active{border-color:var(--amber); color:var(--amber);}
+.chip.active b{color:var(--amber);} 
+.filter-select{
+  border:none; background:transparent; color:inherit; font:inherit; outline:none; cursor:pointer;
+}
+.filter-select option{ color:#111827; }
+.info-strip{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:12px 14px; margin-bottom:18px; border:1px solid var(--line);
+  border-radius:10px; background:rgba(255,255,255,.03); flex-wrap:wrap;
+}
+.info-strip .tip{font-size:13px; color:var(--text-dim);}
+.info-strip .pill{
+  font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--cyan);
+  border:1px solid var(--cyan); border-radius:999px; padding:6px 10px; background:rgba(45,212,232,.08);
+}
+.category-badge{
+  margin-top:10px; display:inline-block; padding:4px 8px; border-radius:999px;
+  font-size:10px; font-family:'Share Tech Mono',monospace; letter-spacing:1px;
+  color:var(--text-dim); background:rgba(255,255,255,.05); border:1px solid var(--line);
+}
+@media (max-width:560px){
+  .hud{ display:none; }
+  header{ align-items:center; }
+  .info-strip{ align-items:flex-start; }
+}
+
+/* ===== SETTINGS BANNER ===== */
+.settings-banner{
+  display:none; align-items:center; justify-content:space-between; gap:12px;
+  background:linear-gradient(90deg, rgba(245,166,35,.12), rgba(245,166,35,.03));
+  border:1px solid var(--amber-dim); border-radius:10px;
+  padding:12px 16px; margin-bottom:20px; flex-wrap:wrap;
+}
+.settings-banner.show{display:flex;}
+.settings-banner .msg{font-size:13px; color:var(--amber); display:flex; align-items:center; gap:8px;}
+.settings-banner .actions{display:flex; gap:8px; flex-wrap:wrap;}
+.btn{
+  font-family:'Sarabun',sans-serif; font-size:13px; font-weight:600;
+  border-radius:7px; padding:8px 14px; cursor:pointer; border:1px solid var(--line);
+  background:var(--bg-panel-2); color:var(--text); transition:.15s;
+}
+.btn:hover{ border-color:var(--cyan); color:var(--cyan); }
+.btn.primary{ background:var(--amber); border-color:var(--amber); color:#1a1300; }
+.btn.primary:hover{ filter:brightness(1.08); color:#1a1300;}
+.btn.danger{ color:var(--red); }
+.btn.danger:hover{ border-color:var(--red); }
+.btn.sm{ padding:5px 9px; font-size:12px; }
+
+/* ===== GRID ===== */
+.grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(270px,1fr));
+  gap:18px;
+}
+.card{
+  position:relative;
+  background:linear-gradient(160deg, var(--bg-panel-2), var(--bg-panel));
+  border:1px solid var(--line); border-radius:var(--radius);
+  padding:20px 18px 18px;
+  box-shadow:var(--shadow);
+  transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  overflow:hidden;
+}
+.card::before{ /* top accent strip */
+  content:""; position:absolute; top:0; left:0; right:0; height:3px;
+  background:var(--accent, var(--amber));
+}
+.card:hover{ transform:translateY(-3px); border-color:var(--accent, var(--amber-dim)); }
+.bolt{
+  position:absolute; width:5px; height:5px; border-radius:50%;
+  background:#000; box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+}
+.bolt.tl{top:9px; left:9px;} .bolt.tr{top:9px; right:9px;}
+.bolt.bl{bottom:9px; left:9px;} .bolt.br{bottom:9px; right:9px;}
+
+.card-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:14px;}
+.card-icon{
+  width:44px; height:44px; border-radius:8px; flex:none;
+  background:rgba(255,255,255,.03); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--accent, var(--amber));
+}
+.card-icon svg{width:24px;height:24px;}
+.status{
+  display:flex; align-items:center; gap:6px;
+  font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--text-faint);
+  letter-spacing:1px; text-transform:uppercase;
+}
+.led{width:7px;height:7px;border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); animation:pulse 2.2s infinite ease-in-out;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+.card-id{ font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--text-faint); letter-spacing:1.5px; margin-bottom:4px;}
+.card h3{ font-family:'Rajdhani',sans-serif; font-size:21px; font-weight:700; margin:0 0 2px; letter-spacing:.3px;}
+.card .en{ font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--text-dim); letter-spacing:1px; margin-bottom:8px;}
+.card p.desc{ font-size:13px; color:var(--text-dim); margin:0 0 16px; line-height:1.5; min-height:20px;}
+.card-foot{ display:flex; align-items:center; justify-content:space-between; gap:10px;}
+.launch{
+  flex:1; text-align:center; text-decoration:none; display:block;
+  font-family:'Rajdhani',sans-serif; font-weight:600; font-size:15px; letter-spacing:.5px;
+  color:#0d0700; background:var(--accent, var(--amber));
+  padding:10px 12px; border-radius:7px; transition:.15s;
+}
+.launch:hover{ filter:brightness(1.1); }
+.last-used{ font-size:10px; color:var(--text-faint); font-family:'Share Tech Mono',monospace; margin-top:8px;}
+
+.pin-btn{
+  width:30px;height:30px; border-radius:6px; border:1px solid var(--line);
+  background:transparent; color:var(--text-faint); cursor:pointer;
+  display:flex; align-items:center; justify-content:center; flex:none;
+}
+.pin-btn.active{ color:var(--amber); border-color:var(--amber-dim); }
+.pin-btn svg{width:15px;height:15px;}
+
+/* edit mode */
+.card.editing{ border-color:var(--cyan); }
+.edit-panel{ display:none; flex-direction:column; gap:8px; margin-top:10px; }
+.card.editing .edit-panel{ display:flex; }
+.card.editing .view-only{ display:none; }
+.edit-panel input, .edit-panel select{
+  width:100%; background:var(--bg); border:1px solid var(--line); color:var(--text);
+  padding:8px 10px; border-radius:6px; font-size:13px; font-family:'Sarabun',sans-serif;
+}
+.edit-panel label{ font-size:10px; color:var(--text-faint); font-family:'Share Tech Mono',monospace; letter-spacing:1px; margin-bottom:-4px;}
+.edit-row{ display:flex; gap:8px; }
+.swatches{ display:flex; gap:6px; }
+.swatch{ width:22px;height:22px;border-radius:5px; cursor:pointer; border:2px solid transparent;}
+.swatch.sel{ border-color:#fff; }
+.edit-actions{ display:flex; gap:8px; margin-top:4px; }
+.card-controls{ position:absolute; top:10px; right:10px; display:flex; gap:6px; opacity:0; transition:.15s;}
+.card.editmode .card-controls{ opacity:1; }
+.icon-btn{
+  width:26px;height:26px;border-radius:5px; border:1px solid var(--line); background:var(--bg-panel);
+  color:var(--text-dim); cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+.icon-btn:hover{ color:var(--cyan); border-color:var(--cyan);}
+.icon-btn.del:hover{ color:var(--red); border-color:var(--red);}
+.icon-btn svg{width:13px;height:13px;}
+
+.add-card{
+  border:1.5px dashed var(--line); background:transparent; box-shadow:none;
+  display:flex; align-items:center; justify-content:center; min-height:180px;
+  cursor:pointer; color:var(--text-faint); flex-direction:column; gap:8px;
+}
+.add-card:hover{ border-color:var(--cyan); color:var(--cyan); }
+.add-card svg{width:26px;height:26px;}
+.add-card span{ font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:600; letter-spacing:.5px;}
+
+.empty{ text-align:center; padding:60px 20px; color:var(--text-faint); font-family:'Share Tech Mono',monospace; }
+
+footer{ text-align:center; margin-top:44px; color:var(--text-faint); font-size:11px; font-family:'Share Tech Mono',monospace; letter-spacing:.5px;}
+
+/* ===== VIEWER (in-page iframe) ===== */
+.viewer{ display:none; }
+.viewer.show{ display:flex; flex-direction:column; height:calc(100vh - 40px); min-height:520px; }
+.viewer-bar{
+  display:flex; align-items:center; gap:12px; padding:10px 4px 14px; flex-wrap:wrap;
+  border-bottom:1px solid var(--line); margin-bottom:0;
+}
+.back-btn{
+  display:flex; align-items:center; gap:8px; flex:none;
+  font-family:'Rajdhani',sans-serif; font-weight:700; font-size:15px; letter-spacing:.4px;
+  color:var(--bg); background:var(--amber); border:none; border-radius:8px;
+  padding:9px 16px; cursor:pointer; transition:.15s;
+}
+.back-btn:hover{ filter:brightness(1.08); }
+.back-btn svg{ width:17px; height:17px; }
+.viewer-title{ display:flex; align-items:center; gap:10px; flex:1; min-width:180px; }
+.viewer-title .dot{ width:9px;height:9px;border-radius:50%; background:var(--vcolor,var(--amber)); box-shadow:0 0 6px var(--vcolor,var(--amber)); flex:none;}
+.viewer-title h2{ font-family:'Rajdhani',sans-serif; font-size:18px; font-weight:700; margin:0; letter-spacing:.3px; }
+.viewer-title span{ font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--text-faint); }
+.viewer-actions{ display:flex; gap:8px; flex:none; }
+.viewer-frame-wrap{
+  position:relative; flex:1; margin-top:14px; border-radius:10px; overflow:hidden;
+  border:1px solid var(--line); background:#000;
+}
+.viewer-frame-wrap iframe{ width:100%; height:100%; border:0; display:block; background:#fff; }
+.viewer-loading{
+  position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:14px; background:var(--bg-panel); color:var(--text-dim); font-family:'Share Tech Mono',monospace; font-size:12px;
+  transition:opacity .25s ease;
+}
+.spin{ width:34px;height:34px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--vcolor,var(--amber)); animation:spin 0.9s linear infinite;}
+@keyframes spin{ to{ transform:rotate(360deg);} }
+.viewer-fallback{
+  position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+  background:var(--bg-panel); color:var(--text-dim); text-align:center; padding:30px; font-size:13px;
+}
+.viewer-fallback.show{ display:flex; }
+.viewer-fallback svg{ width:34px; height:34px; color:var(--red); }
+
+@media (max-width:560px){
+  .hud{ display:none; }
+  header{ align-items:center; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="1.6"><path d="M4 20h16M6 20V9l6-5 6 5v11M9 20v-6h6v6"/></svg>
+      </div>
+      <div>
+        <h1>ศูนย์ควบคุมระบบโรงงาน</h1>
+        <p>FACTORY SYSTEMS HUB · CONTROL DECK</p>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <div class="hud">
+        <div class="hud-block">
+          <div class="hud-label">Local Time</div>
+          <div class="hud-value" id="clock">--:--:--</div>
+        </div>
+        <div class="hud-block">
+          <div class="hud-label">Date</div>
+          <div class="hud-value" id="dateBox" style="font-size:13px;">-</div>
+        </div>
+      </div>
+      <button class="gear-btn" id="gearBtn" title="โหมดตั้งค่า" aria-label="เปิดโหมดตั้งค่า">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+      <button class="gear-btn" id="themeBtn" title="สลับโหมดสี" aria-label="สลับโหมดสี" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v2M12 19v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M3 12h2M19 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/><circle cx="12" cy="12" r="3.5"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div id="homeView">
+    <div class="settings-banner" id="settingsBanner">
+      <div class="msg">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86l-8.18 14.18A1 1 0 003 19.5h18a1 1 0 00.87-1.46L13.71 3.86a1 1 0 00-1.74 0z"/></svg>
+        โหมดตั้งค่า: แก้ไข เพิ่ม ลบ หรือจัดลำดับลิงก์ระบบได้ที่การ์ดแต่ละใบ
+      </div>
+      <div class="actions">
+        <button class="btn sm" id="exportBtn">Export JSON</button>
+        <button class="btn sm" id="importBtn">Import JSON</button>
+        <button class="btn sm danger" id="resetBtn">คืนค่าเริ่มต้น</button>
+        <input type="file" id="importFile" accept=".json" style="display:none">
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="chip">
+        <select class="filter-select" id="categoryFilter" aria-label="กรองตามหมวดหมู่ระบบ">
+          <option value="all">ทุกหมวดหมู่</option>
+          <option value="Maintenance">Maintenance</option>
+          <option value="Production">Production</option>
+          <option value="Logistics">Logistics</option>
+          <option value="Quality">Quality</option>
+          <option value="Improvement">Improvement</option>
+          <option value="Planning">Planning</option>
+          <option value="Safety">Safety</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <button class="chip" id="favsBtn" type="button" aria-pressed="false">แสดงเฉพาะรายการโปรด</button>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-3.8-3.8"/></svg>
+        <input type="text" id="searchBox" placeholder="ค้นหาระบบ... (ชื่อไทย / อังกฤษ)" autocomplete="off" aria-label="ค้นหาระบบ">
+      </div>
+      <div class="chip">ระบบทั้งหมด: <b id="countAll">0</b></div>
+      <div class="chip">รายการโปรด: <b id="countPinned">0</b></div>
+      <div class="chip">ออนไลน์: <b id="countOnline">0</b></div>
+      <div class="chip">ออฟไลน์: <b id="countOffline">0</b></div>
+    </div>
+    <div class="info-strip">
+      <div class="tip">เคล็ดลับ: กดปุ่มเฟืองเพื่อเปิดโหมดตั้งค่าและจัดการลิงก์ระบบได้ทันที</div>
+      <div class="pill">รองรับการค้นหาแบบเรียลไทม์</div>
+    </div>
+    <div class="grid" id="grid"></div>
+
+    <footer>FACTORY SYSTEMS HUB · เปิดใช้งานได้ทุกอุปกรณ์ · ข้อมูลลิงก์บันทึกในเบราว์เซอร์นี้เท่านั้น</footer>
+  </div>
+
+  <div class="viewer" id="viewer">
+    <div class="viewer-bar">
+      <button class="back-btn" id="backBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+        กลับหน้าหลัก
+      </button>
+      <div class="viewer-title">
+        <span class="dot" id="viewerDot"></span>
+        <div>
+          <h2 id="viewerTitleTh">-</h2>
+          <span id="viewerTitleEn">-</span>
+        </div>
+      </div>
+      <div class="viewer-actions">
+        <button class="btn sm" id="reloadBtn">รีโหลด</button>
+        <a class="btn sm" id="newTabBtn" href="#" target="_blank" rel="noopener">เปิดแท็บใหม่ ↗</a>
+      </div>
+    </div>
+    <div class="viewer-frame-wrap">
+      <div class="viewer-loading" id="viewerLoading">
+        <div class="spin"></div>
+        <div>กำลังโหลดระบบ...</div>
+      </div>
+      <div class="viewer-fallback" id="viewerFallback">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86l-8.18 14.18A1 1 0 003 19.5h18a1 1 0 00.87-1.46L13.71 3.86a1 1 0 00-1.74 0z"/></svg>
+        <div>ระบบนี้ไม่อนุญาตให้เปิดแบบฝังในหน้านี้<br>กรุณาเปิดในแท็บใหม่แทน</div>
+        <a class="btn primary sm" id="fallbackOpenBtn" href="#" target="_blank" rel="noopener">เปิดแท็บใหม่ ↗</a>
+      </div>
+      <iframe id="viewerFrame" title="system-viewer" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'factoryPortalLinks_v1';
+const PIN_KEY = 'factoryPortalPins_v1';
+const LASTUSED_KEY = 'factoryPortalLastUsed_v1';
+
+const ICONS = {
+  hanger: '<path d="M12 4a2 2 0 100-.001M12 4v3M6 21l6-6 6 6M4 21h16M12 7c-3 2-8 4-8 8h16c0-4-5-6-8-8z"/>',
+  bulb: '<path d="M9 18h6M10 22h4M12 2a6 6 0 00-3.6 10.8c.6.5 1 1.2 1.1 2h5c.1-.8.5-1.5 1.1-2A6 6 0 0012 2z"/>',
+  robot: '<path d="M12 2v3M8 9h8a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a2 2 0 012-2z"/><circle cx="9.5" cy="13" r="1"/><circle cx="14.5" cy="13" r="1"/><path d="M4 12v3M20 12v3"/>',
+  agv: '<path d="M3 16V9a1 1 0 011-1h9l4 4h3a1 1 0 011 1v3"/><circle cx="7.5" cy="17.5" r="1.8"/><circle cx="17.5" cy="17.5" r="1.8"/><path d="M9 16h6"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  gear: '<path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82 2 2 0 11-2.83 2.83 1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51 2 2 0 01-4 0 1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33 2 2 0 11-2.83-2.83 1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1 2 2 0 010-4 1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82 2 2 0 112.83-2.83 1.65 1.65 0 001.82.33 1.65 1.65 0 001-1.51 2 2 0 014 0 1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33 2 2 0 112.83 2.83 1.65 1.65 0 00-.33 1.82 1.65 1.65 0 001.51 1 2 2 0 010 4 1.65 1.65 0 00-1.51 1z"/>',
+  box: '<path d="M21 8L12 3 3 8l9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>'
+};
+
+const COLORS = ['#f5a623','#2dd4e8','#34d399','#a78bfa','#f472b6','#fb923c'];
+
+const DEFAULT_LINKS = [
+  { id:'hanger',   nameTh:'HANGER SYSTEM',        nameEn:'HANGER SYSTEM',   desc:'ตรวจสอบและบำรุงรักษาระบบแขวน PC', url:'https://kajork123-bit.github.io/PM-Hanger-Sysytem-PC/', icon:'hanger', color:'#f5a623', category:'Maintenance', status:'online' },
+  { id:'kaizen',   nameTh:'KAIZEN IMPROVEMENT',      nameEn:'KAIZEN IMPROVEMENT', desc:'ติดตามโครงการปรับปรุงและ ROI', url:'https://kajork123-bit.github.io/Kaizen-Improvement/', icon:'bulb', color:'#2dd4e8', category:'Improvement', status:'online' },
+  { id:'glue',     nameTh:'ROBOT GLUE',         nameEn:'ROBOT GLUE',      desc:'บันทึก PM ถังกาวและไลน์โรบอท', url:'https://kajork123-bit.github.io/PM-Glue-Record-Tank/', icon:'robot', color:'#34d399', category:'Production', status:'online' },
+  { id:'agv',      nameTh:'AGV SYSTEM',              nameEn:'AGV SYSTEM',      desc:'ตรวจสอบสถานะและ PM รถ AGV', url:'https://kajork123-bit.github.io/AGV-System/', icon:'agv', color:'#a78bfa', category:'Logistics', status:'online' },
+  { id:'downtime', nameTh:'DOWNTIME',        nameEn:'DOWNTIME',        desc:'บันทึกและวิเคราะห์ Downtime สายการผลิต', url:'https://kajork123-bit.github.io/Downtime-GA/', icon:'clock', color:'#fb923c', category:'Quality', status:'offline' },
+];
+
+const CATEGORIES = ['Maintenance','Production','Logistics','Quality','Improvement','Planning','Safety','Other'];
+
+let links = loadLinks();
+let pins = JSON.parse(localStorage.getItem(PIN_KEY) || '[]');
+let lastUsed = JSON.parse(localStorage.getItem(LASTUSED_KEY) || '{}');
+let settingsMode = false;
+let editingId = null;
+let showOnlyPinned = false;
+let selectedCategory = 'all';
+let theme = localStorage.getItem('factoryPortalTheme_v1') || 'dark';
+
+function loadLinks(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(Array.isArray(parsed) && parsed.length){
+        return parsed.map(link => ({
+          ...link,
+          category: link.category || 'Other',
+          status: link.status || 'online'
+        }));
+      }
+    }
+  }catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_LINKS));
+}
+function saveLinks(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(links)); }
+function savePins(){ localStorage.setItem(PIN_KEY, JSON.stringify(pins)); }
+function saveLastUsed(){ localStorage.setItem(LASTUSED_KEY, JSON.stringify(lastUsed)); }
+
+// ---- Clock ----
+function tickClock(){
+  const now = new Date();
+  const opts = { timeZone:'Asia/Bangkok', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false };
+  document.getElementById('clock').textContent = now.toLocaleTimeString('th-TH', opts);
+  const dateOpts = { timeZone:'Asia/Bangkok', day:'2-digit', month:'short', year:'numeric' };
+  document.getElementById('dateBox').textContent = now.toLocaleDateString('th-TH', dateOpts);
+}
+tickClock(); setInterval(tickClock, 1000);
+
+function fmtLastUsed(ts){
+  if(!ts) return 'ยังไม่เคยเปิด';
+  const d = new Date(ts);
+  const diffMin = Math.round((Date.now() - ts)/60000);
+  if(diffMin < 1) return 'เพิ่งเปิดไป';
+  if(diffMin < 60) return `เปิดล่าสุด ${diffMin} นาทีที่แล้ว`;
+  const diffH = Math.round(diffMin/60);
+  if(diffH < 24) return `เปิดล่าสุด ${diffH} ชม.ที่แล้ว`;
+  const diffD = Math.round(diffH/24);
+  return `เปิดล่าสุด ${diffD} วันที่แล้ว`;
+}
+
+function applyTheme(){
+  document.body.dataset.theme = theme;
+  document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
+  const themeBtn = document.getElementById('themeBtn');
+  if(themeBtn){
+    themeBtn.classList.toggle('active', theme === 'light');
+    themeBtn.setAttribute('aria-pressed', String(theme === 'light'));
+  }
+}
+
+function render(){
+  const grid = document.getElementById('grid');
+  const q = document.getElementById('searchBox').value.trim().toLowerCase();
+  const categoryFilter = document.getElementById('categoryFilter');
+  const favsBtn = document.getElementById('favsBtn');
+
+  let items = links.filter(l => !q || l.nameTh.toLowerCase().includes(q) || l.nameEn.toLowerCase().includes(q) || l.desc.toLowerCase().includes(q));
+  if(showOnlyPinned) items = items.filter(l => pins.includes(l.id));
+  if(selectedCategory !== 'all') items = items.filter(l => (l.category || 'Other') === selectedCategory);
+  // pinned first
+  items = items.slice().sort((a,b) => (pins.includes(b.id)?1:0) - (pins.includes(a.id)?1:0));
+
+  document.getElementById('countAll').textContent = links.length;
+  document.getElementById('countPinned').textContent = pins.length;
+  document.getElementById('countOnline').textContent = links.filter(l => l.status === 'online').length;
+  document.getElementById('countOffline').textContent = links.filter(l => l.status !== 'online').length;
+  if(categoryFilter) categoryFilter.value = selectedCategory;
+  if(favsBtn){
+    favsBtn.classList.toggle('active', showOnlyPinned);
+    favsBtn.setAttribute('aria-pressed', String(showOnlyPinned));
+  }
+
+  grid.innerHTML = '';
+
+  if(items.length === 0){
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">ไม่พบระบบที่ตรงกับ "${escapeHtml(q)}"</div>`;
+  }
+
+  items.forEach((l, idx) => {
+    const card = document.createElement('div');
+    card.className = 'card' + (settingsMode ? ' editmode' : '') + (editingId === l.id ? ' editing' : '');
+    card.style.setProperty('--accent', l.color);
+
+    const iconSvg = ICONS[l.icon] || ICONS.box;
+    const isPinned = pins.includes(l.id);
+    const isOnline = l.status === 'online';
+    const realIdx = links.findIndex(x => x.id === l.id);
+
+    card.innerHTML = `
+      <div class="bolt tl"></div><div class="bolt tr"></div><div class="bolt bl"></div><div class="bolt br"></div>
+      ${settingsMode ? `
+      <div class="card-controls">
+        <button class="icon-btn" data-act="up" data-id="${l.id}" title="เลื่อนขึ้น"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg></button>
+        <button class="icon-btn" data-act="down" data-id="${l.id}" title="เลื่อนลง"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+        <button class="icon-btn" data-act="edit" data-id="${l.id}" title="แก้ไข"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></button>
+        <button class="icon-btn del" data-act="del" data-id="${l.id}" title="ลบ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6"/></svg></button>
+      </div>` : ''}
+
+      <div class="view-only">
+        <div class="card-top">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">${iconSvg}</svg></div>
+          <button class="pin-btn ${isPinned?'active':''}" data-act="pin" data-id="${l.id}" title="ปักหมุด">
+            <svg viewBox="0 0 24 24" fill="${isPinned?'currentColor':'none'}" stroke="currentColor" stroke-width="1.7"><path d="M12 17v5M5 10l7-7 7 7-2 2H7l-2-2z"/><path d="M7 10v3.5L5 17h14l-2-3.5V10"/></svg>
+          </button>
+        </div>
+        <div class="card-id">MOD-0${idx+1}</div>
+        <h3>${escapeHtml(l.nameTh)}</h3>
+        <div class="en">${escapeHtml(l.nameEn)}</div>
+        <p class="desc">${escapeHtml(l.desc)}</p>
+        <div class="card-foot">
+          <a class="launch" href="${escapeAttr(l.url)}" rel="noopener" data-act="open" data-id="${l.id}">เข้าสู่ระบบ →</a>
+        </div>
+        <div class="last-used">${fmtLastUsed(lastUsed[l.id])}</div>
+        <div class="category-badge">${escapeHtml(l.category || 'Other')}</div>
+        <div class="status" style="margin-top:10px;"><span class="led ${isOnline ? 'online' : 'offline'}"></span> ${isOnline ? 'ONLINE' : 'OFFLINE'}</div>
+      </div>
+
+      <div class="edit-panel">
+        <label>ชื่อ (ไทย)</label>
+        <input type="text" data-f="nameTh" value="${escapeAttr(l.nameTh)}">
+        <label>ชื่อ (อังกฤษ)</label>
+        <input type="text" data-f="nameEn" value="${escapeAttr(l.nameEn)}">
+        <label>คำอธิบายสั้น</label>
+        <input type="text" data-f="desc" value="${escapeAttr(l.desc)}">
+        <label>ลิงก์ URL</label>
+        <input type="text" data-f="url" value="${escapeAttr(l.url)}">
+        <label>หมวดหมู่</label>
+        <select data-f="category">
+          ${CATEGORIES.map(c => `<option value="${c}" ${c=== (l.category || 'Other') ?'selected':''}>${c}</option>`).join('')}
+        </select>
+        <label>สถานะ</label>
+        <select data-f="status">
+          <option value="online" ${l.status === 'online' ? 'selected' : ''}>ออนไลน์</option>
+          <option value="offline" ${l.status !== 'online' ? 'selected' : ''}>ออฟไลน์</option>
+        </select>
+        <label>ไอคอน</label>
+        <select data-f="icon">
+          ${Object.keys(ICONS).map(k => `<option value="${k}" ${k===l.icon?'selected':''}>${k}</option>`).join('')}
+        </select>
+        <label>สี</label>
+        <div class="swatches">
+          ${COLORS.map(c => `<div class="swatch ${c===l.color?'sel':''}" style="background:${c}" data-f="color" data-val="${c}"></div>`).join('')}
+        </div>
+        <div class="edit-actions">
+          <button class="btn primary sm" data-act="save" data-id="${l.id}">บันทึก</button>
+          <button class="btn sm" data-act="cancel" data-id="${l.id}">ยกเลิก</button>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  if(settingsMode){
+    const addCard = document.createElement('div');
+    addCard.className = 'card add-card';
+    addCard.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><span>เพิ่มระบบใหม่</span>`;
+    addCard.addEventListener('click', addNew);
+    grid.appendChild(addCard);
+  }
+
+  attachHandlers();
+}
+
+function attachHandlers(){
+  document.querySelectorAll('[data-act]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      const act = el.dataset.act;
+      const id = el.dataset.id;
+      if(act === 'pin'){ e.preventDefault(); togglePin(id); }
+      else if(act === 'edit'){ editingId = id; render(); }
+      else if(act === 'cancel'){ editingId = null; render(); }
+      else if(act === 'del'){ deleteLink(id); }
+      else if(act === 'up'){ moveLink(id, -1); }
+      else if(act === 'down'){ moveLink(id, 1); }
+      else if(act === 'save'){ saveEdit(id, el.closest('.card')); }
+      else if(act === 'open'){
+        // allow ctrl/cmd/middle-click to open a normal new tab as usual
+        if(e.ctrlKey || e.metaKey || e.button === 1) return;
+        e.preventDefault();
+        openViewer(id);
+      }
+    });
+  });
+  document.querySelectorAll('.swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      sw.parentElement.querySelectorAll('.swatch').forEach(s => s.classList.remove('sel'));
+      sw.classList.add('sel');
+    });
+  });
+}
+
+function markUsed(id){ lastUsed[id] = Date.now(); saveLastUsed(); }
+
+// ---- In-page viewer ----
+const homeView = document.getElementById('homeView');
+const viewer = document.getElementById('viewer');
+const viewerFrame = document.getElementById('viewerFrame');
+const viewerLoading = document.getElementById('viewerLoading');
+const viewerFallback = document.getElementById('viewerFallback');
+let viewerTimer = null;
+
+function openViewer(id){
+  const l = links.find(x => x.id === id);
+  if(!l) return;
+  markUsed(id);
+
+  document.getElementById('viewerTitleTh').textContent = l.nameTh;
+  document.getElementById('viewerTitleEn').textContent = l.nameEn;
+  document.getElementById('viewerDot').style.setProperty('--vcolor', l.color);
+  viewerLoading.style.setProperty('--vcolor', l.color);
+  document.getElementById('newTabBtn').href = l.url;
+  document.getElementById('fallbackOpenBtn').href = l.url;
+
+  viewerFallback.classList.remove('show');
+  viewerLoading.style.display = 'flex';
+  viewerLoading.style.opacity = '1';
+  viewerFrame.src = l.url;
+
+  homeView.style.display = 'none';
+  viewer.classList.add('show');
+  window.scrollTo({top:0, behavior:'instant'});
+
+  clearTimeout(viewerTimer);
+  // if it hasn't loaded within 6s, most likely blocked by X-Frame-Options/CSP
+  viewerTimer = setTimeout(() => {
+    if(viewerLoading.style.display !== 'none'){
+      viewerFallback.classList.add('show');
+      viewerLoading.style.display = 'none';
+    }
+  }, 6000);
+}
+
+function closeViewer(){
+  clearTimeout(viewerTimer);
+  viewerFrame.src = 'about:blank';
+  viewer.classList.remove('show');
+  homeView.style.display = 'block';
+  render();
+}
+
+viewerFrame.addEventListener('load', () => {
+  if(viewerFrame.src === 'about:blank' || viewerFrame.src === '') return;
+  clearTimeout(viewerTimer);
+  viewerLoading.style.opacity = '0';
+  setTimeout(() => { viewerLoading.style.display = 'none'; }, 250);
+});
+
+document.getElementById('backBtn').addEventListener('click', closeViewer);
+document.getElementById('reloadBtn').addEventListener('click', () => {
+  viewerFallback.classList.remove('show');
+  viewerLoading.style.display = 'flex';
+  viewerLoading.style.opacity = '1';
+  const src = viewerFrame.src;
+  viewerFrame.src = 'about:blank';
+  clearTimeout(viewerTimer);
+  setTimeout(() => {
+    viewerFrame.src = src;
+    viewerTimer = setTimeout(() => {
+      if(viewerLoading.style.display !== 'none'){
+        viewerFallback.classList.add('show');
+        viewerLoading.style.display = 'none';
+      }
+    }, 6000);
+  }, 50);
+});
+
+// Esc key returns to home from viewer
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape' && viewer.classList.contains('show')) closeViewer();
+});
+
+function togglePin(id){
+  if(pins.includes(id)) pins = pins.filter(p => p !== id);
+  else pins.push(id);
+  savePins(); render();
+}
+function deleteLink(id){
+  if(!confirm('ลบระบบนี้ออกจากรายการ?')) return;
+  links = links.filter(l => l.id !== id);
+  saveLinks(); render();
+}
+function moveLink(id, dir){
+  const i = links.findIndex(l => l.id === id);
+  const j = i + dir;
+  if(j < 0 || j >= links.length) return;
+  [links[i], links[j]] = [links[j], links[i]];
+  saveLinks(); render();
+}
+function saveEdit(id, cardEl){
+  const l = links.find(x => x.id === id);
+  if(!l) return;
+  cardEl.querySelectorAll('[data-f]').forEach(f => {
+    const field = f.dataset.f;
+    if(field === 'color'){
+      if(f.classList.contains('sel')) l.color = f.dataset.val;
+    } else {
+      l[field] = f.value.trim();
+    }
+  });
+  editingId = null;
+  saveLinks(); render();
+}
+function addNew(){
+  const newId = 'sys_' + Date.now();
+  links.push({ id:newId, nameTh:'ระบบใหม่', nameEn:'NEW SYSTEM', desc:'คำอธิบายระบบ', url:'https://', icon:'box', color: COLORS[links.length % COLORS.length], category:'Other', status:'online' });
+  saveLinks();
+  editingId = newId;
+  render();
+  document.querySelector(`.card.editing`)?.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s){ return escapeHtml(s); }
+
+// ---- Settings toggle ----
+document.getElementById('gearBtn').addEventListener('click', () => {
+  settingsMode = !settingsMode;
+  editingId = null;
+  document.getElementById('gearBtn').classList.toggle('active', settingsMode);
+  document.getElementById('settingsBanner').classList.toggle('show', settingsMode);
+  render();
+});
+
+document.getElementById('themeBtn').addEventListener('click', () => {
+  theme = theme === 'light' ? 'dark' : 'light';
+  localStorage.setItem('factoryPortalTheme_v1', theme);
+  applyTheme();
+});
+
+document.getElementById('favsBtn').addEventListener('click', () => {
+  showOnlyPinned = !showOnlyPinned;
+  render();
+});
+
+document.getElementById('categoryFilter').addEventListener('change', (e) => {
+  selectedCategory = e.target.value;
+  render();
+});
+
+document.getElementById('searchBox').addEventListener('input', render);
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if(!confirm('คืนค่ารายการระบบทั้งหมดกลับเป็นค่าเริ่มต้น?')) return;
+  links = JSON.parse(JSON.stringify(DEFAULT_LINKS));
+  saveLinks(); render();
+});
+
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(links, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'factory-portal-links.json';
+  a.click();
+});
+
+document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const parsed = JSON.parse(reader.result);
+      if(!Array.isArray(parsed)) throw new Error('bad format');
+      links = parsed;
+      saveLinks(); render();
+      alert('นำเข้าข้อมูลสำเร็จ');
+    }catch(err){
+      alert('ไฟล์ไม่ถูกต้อง กรุณาตรวจสอบรูปแบบ JSON');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+applyTheme();
+render();
+</script>
+</body>
+</html>
