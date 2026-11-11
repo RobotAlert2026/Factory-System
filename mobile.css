@@ -71,6 +71,19 @@
   .viewer-actions .btn{ flex:1; min-height:40px; text-align:center; padding:7px 8px; }
   .viewer-frame-wrap{ margin-top:10px; min-height:320px; }
   dialog{ width:calc(100% - 24px); padding:18px; }
+  #authDialog{
+    width:min(340px, calc(100% - 24px));
+    max-height:calc(100dvh - 24px);
+    margin:auto;
+    padding:16px;
+    overflow-y:auto;
+  }
+  #authDialog .auth-form{ gap:9px; }
+  #authDialog .auth-form h2{ font-size:21px; line-height:1.15; }
+  #authDialog .auth-form p{ margin:0; font-size:12px; line-height:1.4; }
+  #authDialog .auth-form label{ font-size:12px; }
+  #authDialog .auth-form input{ min-height:40px; margin-top:4px; padding:8px 9px; font-size:14px; }
+  #authDialog .auth-actions{ margin-top:3px; }
   .auth-actions, .launch-choice-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   .launch-choice-actions .btn:last-child{ grid-column:1 / -1; }
   .auth-actions .btn{ min-height:40px; }
