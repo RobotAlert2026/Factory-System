@@ -1,71 +1,93 @@
-/* ===== PHONE LAYOUT ===== */
+/* ===== MOBILE UI ===== */
 @media (max-width:560px){
+  :root{ --mobile-gap:10px; }
   html, body{ min-width:0; }
   body{ background-attachment:scroll; }
-  .wrap{ padding:12px 9px 28px; }
+  .wrap{ width:100%; padding:14px 12px 32px; padding-bottom:calc(32px + env(safe-area-inset-bottom)); }
+  header{ align-items:stretch; gap:12px; padding-bottom:14px; margin-bottom:16px; }
+  .brand{ align-items:flex-start; gap:10px; width:100%; }
+  .brand-mark{ width:40px; height:40px; }
+  .brand-mark svg{ width:20px; height:20px; }
+  .brand h1{ font-size:20px; line-height:1.15; overflow-wrap:anywhere; }
+  .brand p{ font-size:9px; letter-spacing:.15px; }
   .hud{ display:none; }
+  .header-controls{ display:grid; grid-template-columns:minmax(0,1fr) 40px auto; width:100%; gap:8px; align-items:center; }
+  .header-controls #authBtn{ min-width:0; width:100%; min-height:40px; padding:7px 10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .header-controls .gear-btn{ width:40px; height:40px; }
+  .header-controls .gear-btn svg{ width:19px; height:19px; }
+  .language-picker select{ width:100%; max-width:92px; min-height:40px; padding:6px 8px; font-size:13px; }
 
-  header{ align-items:stretch; gap:10px; padding-bottom:12px; margin-bottom:14px; }
-  .brand{ align-items:flex-start; gap:8px; width:100%; }
-  .brand-mark{ width:32px; height:32px; }
-  .brand-mark svg{ width:17px; height:17px; }
-  .brand h1{ font-size:17px; line-height:1.1; overflow-wrap:anywhere; }
-  .brand p{ font-size:8px; letter-spacing:0; }
-  .header-controls{
-    display:grid;
-    grid-template-columns:minmax(0,1fr) 34px auto;
-    width:100%; gap:6px; align-items:center;
-  }
-  .header-controls #authBtn{
-    min-width:0; width:100%; padding:5px 7px; overflow:hidden;
-    text-overflow:ellipsis; white-space:nowrap;
-  }
-  .header-controls .gear-btn{ width:34px; height:34px; }
-  .header-controls .gear-btn svg{ width:17px; height:17px; }
-  .language-picker select{ width:100%; max-width:84px; min-height:34px; padding:4px 6px; font-size:12px; }
-
-  .settings-banner{ align-items:stretch; padding:9px 10px; margin-bottom:10px; }
-  .settings-banner .msg{ align-items:flex-start; line-height:1.3; font-size:12px; }
-  .settings-banner .actions{ display:grid; grid-template-columns:1fr 1fr; width:100%; gap:5px; }
+  .settings-banner{ align-items:stretch; gap:10px; padding:11px 12px; margin-bottom:14px; }
+  .settings-banner .msg{ align-items:flex-start; line-height:1.4; font-size:13px; }
+  .settings-banner .actions{ display:grid; grid-template-columns:1fr 1fr; width:100%; gap:8px; }
   .settings-banner .actions .danger{ grid-column:1 / -1; }
-  .settings-banner .btn{ min-height:32px; padding:4px 6px; font-size:11px; }
+  .settings-banner .btn{ min-height:38px; padding:7px 8px; }
 
-  .toolbar{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:12px; }
+  .toolbar{ display:grid; grid-template-columns:1fr 1fr; gap:var(--mobile-gap); margin-bottom:14px; }
   .toolbar .chip, .toolbar .search{ min-width:0; width:100%; }
   .toolbar .search{ grid-column:1 / -1; grid-row:1; }
-  .toolbar .chip:first-child{ grid-column:1 / -1; grid-row:2; }
-  .toolbar #favsBtn{ grid-column:1 / -1; grid-row:3; }
-  .toolbar .chip{ overflow:hidden; text-overflow:ellipsis; padding:6px 8px; font-size:10px; }
-  .search input{ padding:8px 10px 8px 32px; font-size:13px; }
-  .filter-select{ max-width:100%; }
+  .toolbar .search input{ min-height:44px; padding:10px 12px 10px 40px; border-radius:10px; font-size:15px; }
+  .toolbar .search svg{ left:13px; width:18px; height:18px; }
+  .toolbar .chip:first-child{ grid-column:1; grid-row:2; }
+  .toolbar #favsBtn{ grid-column:2; grid-row:2; }
+  .toolbar .chip{ min-height:40px; display:flex; align-items:center; justify-content:center; overflow:hidden; text-overflow:ellipsis; padding:8px 9px; font-size:11px; }
+  .filter-select{ max-width:100%; font-size:12px; }
+  .toolbar .chip:has(#countAll), .toolbar .chip:has(#countPinned), .toolbar .chip:has(#countOnline), .toolbar .chip:has(#countOffline){ min-height:44px; justify-content:space-between; padding-inline:10px; }
 
-  .info-strip{ padding:8px 9px; margin-bottom:10px; }
-  .info-strip .tip{ font-size:11px; }
-  .info-strip .pill{ width:100%; text-align:center; padding:5px 7px; font-size:10px; }
+  .info-strip{ align-items:stretch; padding:11px 12px; margin-bottom:16px; gap:10px; }
+  .info-strip .tip{ font-size:12px; line-height:1.5; }
+  .info-strip .pill{ width:100%; text-align:center; padding:7px 9px; font-size:10px; }
 
-  .grid{ grid-template-columns:1fr; gap:9px; }
+  /* Website options: two compact columns reduce long scrolling. */
+  .grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
   .card{ padding:13px 11px 12px; }
-  .card-top{ margin-bottom:10px; }
+  .card-top{ margin-bottom:9px; }
   .card-icon{ width:36px; height:36px; }
-  .card-icon svg{ width:20px; height:20px; }
-  .card h3{ font-size:18px; }
-  .card .en{ font-size:10px; margin-bottom:5px; }
-  .card p.desc{ font-size:12px; margin-bottom:10px; }
-  .launch{ min-height:34px; padding:8px 7px; font-size:14px; }
-  .add-card{ min-height:105px; }
-  footer{ margin-top:22px; line-height:1.4; font-size:10px; }
+  .card-icon svg{ width:19px; height:19px; }
+  .card h3{ font-size:18px; line-height:1.1; overflow-wrap:anywhere; }
+  .card .en{ font-size:9px; margin-bottom:5px; overflow-wrap:anywhere; }
+  .card p.desc{
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    overflow:hidden;
+    font-size:11px;
+    line-height:1.4;
+    min-height:31px;
+    margin-bottom:10px;
+  }
+  .card-foot{ gap:6px; }
+  .launch{ min-height:38px; padding:9px 6px; font-size:14px; }
+  .pin-btn{ width:34px; height:34px; }
+  .add-card{ min-height:120px; }
+  footer{ margin-top:28px; line-height:1.5; font-size:10px; }
 
-  .viewer.show{ height:calc(100vh - 18px); min-height:380px; }
-  .viewer-bar{ padding:4px 0 8px; gap:6px; }
-  .back-btn{ width:100%; justify-content:center; padding:7px 9px; font-size:14px; }
+  .viewer.show{ height:calc(100vh - 24px); min-height:440px; }
+  .viewer-bar{ padding:5px 0 10px; gap:9px; }
+  .back-btn{ width:100%; justify-content:center; min-height:42px; padding:9px 12px; }
   .viewer-title{ order:2; min-width:0; width:100%; }
-  .viewer-title h2{ font-size:16px; overflow-wrap:anywhere; }
+  .viewer-title h2{ font-size:18px; overflow-wrap:anywhere; }
   .viewer-actions{ order:3; width:100%; }
-  .viewer-actions .btn{ flex:1; text-align:center; min-height:32px; padding:5px 6px; font-size:11px; }
-  .viewer-frame-wrap{ margin-top:8px; min-height:270px; }
-
-  dialog{ padding:15px; }
-  .auth-actions, .launch-choice-actions{ display:grid; grid-template-columns:1fr 1fr; }
+  .viewer-actions .btn{ flex:1; min-height:40px; text-align:center; padding:7px 8px; }
+  .viewer-frame-wrap{ margin-top:10px; min-height:320px; }
+  dialog{ width:calc(100% - 24px); padding:18px; }
+  .auth-actions, .launch-choice-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   .launch-choice-actions .btn:last-child{ grid-column:1 / -1; }
-  .auth-actions .btn{ min-height:34px; }
+  .auth-actions .btn{ min-height:40px; }
+}
+
+@media (max-width:360px){
+  .wrap{ padding-inline:9px; }
+  .brand h1{ font-size:18px; }
+  .header-controls{ grid-template-columns:minmax(0,1fr) 38px 78px; gap:6px; }
+  .header-controls .gear-btn{ width:38px; height:38px; }
+  .language-picker select{ max-width:78px; font-size:12px; }
+  .settings-banner .actions{ gap:6px; }
+  .toolbar{ gap:7px; }
+  .toolbar .chip{ padding-inline:6px; font-size:10px; }
+  .card{ padding:11px 8px 10px; }
+  .card h3{ font-size:16px; }
+  .card .en{ font-size:8px; }
+  .card p.desc{ font-size:10px; min-height:28px; }
+  .launch{ font-size:12px; }
 }
